@@ -164,6 +164,7 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\kiero\kiero.h" />
+    <ClInclude Include="Utils\ClientLogs.h" />
     <ClInclude Include="Utils\HookImgui.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>

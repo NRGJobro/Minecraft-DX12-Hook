@@ -22,6 +22,7 @@
 #pragma comment(lib, "dwrite.lib")
 #include "Utils/Utils.h"
 #include "Utils/HookImgui.h"
+#include "Utils/ClientLogs.h"
 bool clientAlive = true;
 bool initImgui = true;
 
@@ -37,12 +38,28 @@ void keyCallback(uint64_t c, bool v) {
 typedef void(__thiscall* Mouse)(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8);
 Mouse _Mouse;
 void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8) {
-	_Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
-	//if (mouseButton > 0 && mouseButton < 3)
-		//ImGui::GetIO().MouseDown[0] = isDown;
+	if (ImGui::GetCurrentContext() != nullptr) {
+		switch (mouseButton) {
+		case 1:
+			ImGui::GetIO().MouseDown[0] = isDown;
+			break;
+		case 2:
+			ImGui::GetIO().MouseDown[1] = isDown;
+			break;
+		case 3:
+			ImGui::GetIO().MouseDown[2] = isDown;
+			break;
+		case 4:
+			ImGui::GetIO().MouseWheel = isDown < 0 ? -0.5f : 0.5f; //For scrolling
+			break;
+		default:
+			break;
+		}
 
-	//if (!ImGui::GetIO().WantCaptureMouse)
-		//return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
+		if (!ImGui::GetIO().WantCaptureMouse)
+			return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
+
+	} else return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 }
 
 void Init() {

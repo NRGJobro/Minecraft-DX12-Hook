@@ -1,4 +1,5 @@
 //ImGui Shit
+#include "ClientLogs.h"
 typedef HRESULT(__thiscall* PresentD3D12)(IDXGISwapChain3*, UINT, UINT);
 PresentD3D12 oPresentD3D12;
 ID3D11Device* d3d11Device = nullptr;
@@ -339,6 +340,12 @@ void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandList
 class ImguiHooks {
 public:
 	static void InitImgui() {
+		if (kiero::init(kiero::RenderType::D3D12) == kiero::Status::Success)
+			Log("Created hook for SwapChain::Present (DX12)!");
+
+		if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success)
+			Log("Created hook for SwapChain::Present (DX11)!");
+
 		kiero::bind(54, (void**)&oExecuteCommandListsD3D12, hookExecuteCommandListsD3D12);
 		kiero::bind(140, (void**)&oPresentD3D12, hookPresentD3D12);
 	}
