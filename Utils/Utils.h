@@ -1,9 +1,3 @@
-auto GetDllHMod(void) -> HMODULE {
-	MEMORY_BASIC_INFORMATION info;
-	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllHMod, &info, sizeof(info));
-	assert(len == sizeof(info));
-	return len ? (HMODULE)info.AllocationBase : NULL;
-}
 
 #define INRANGE(x,a,b)   (x >= a && x <= b)
 #define GET_BYTE( x )    (GET_BITS(x[0]) << 4 | GET_BITS(x[1]))

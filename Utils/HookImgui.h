@@ -6,6 +6,13 @@
 #include "Manager/ModuleManager.h"
 ModuleHandler modHandler = ModuleHandler();
 
+auto GetDllMod(void) -> HMODULE {
+	MEMORY_BASIC_INFORMATION info;
+	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllMod, &info, sizeof(info));
+	assert(len == sizeof(info));
+	return len ? (HMODULE)info.AllocationBase : NULL;
+}
+
 typedef HRESULT(__thiscall* PresentD3D12)(IDXGISwapChain3*, UINT, UINT);
 PresentD3D12 oPresentD3D12;
 ID3D11Device* d3d11Device = nullptr;

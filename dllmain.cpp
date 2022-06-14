@@ -7,6 +7,12 @@ ModuleHandler handler = ModuleHandler();
 bool toggledModule = false;
 std::vector<std::string> categories = std::vector<std::string>();
 
+auto GetDllHMod(void) -> HMODULE {
+	MEMORY_BASIC_INFORMATION info;
+	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllHMod, &info, sizeof(info));
+	assert(len == sizeof(info));
+	return len ? (HMODULE)info.AllocationBase : NULL;
+}
 
 void keyCallback(uint64_t c, bool v) {
 	_key(c, v);
@@ -84,9 +90,12 @@ void Init() {
 		if (clientAlive)
 			goto lab;
 
+		DisableThreadLibraryCalls(GetDllHMod());
+		DisableThreadLibraryCalls(GetDllMod());
 		MH_DisableHook(MH_ALL_HOOKS);
 		MH_RemoveHook(MH_ALL_HOOKS);
 		FreeLibraryAndExitThread(GetDllHMod(), 0);
+		FreeLibraryAndExitThread(GetDllMod(), 0);
 	}
 }
 
