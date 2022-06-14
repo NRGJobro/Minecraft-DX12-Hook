@@ -1,8 +1,32 @@
 #include "dllmain.h"
 
+//Module Stuff
+#include "Modules/Module.h"
+#include "Manager/ModuleManager.h"
+ModuleHandler handler = ModuleHandler();
+bool toggledModule = false;
+std::vector<std::string> categories = std::vector<std::string>();
+
+
 void keyCallback(uint64_t c, bool v) {
 	_key(c, v);
 	if (keymap[VK_CONTROL] && keymap['L'] || keymap[VK_END]) clientAlive = false;
+
+	for (int i = 0; i < handler.modules.size(); ++i) {
+		if (c == handler.modules[i]->keybind && v == true) {
+			handler.modules[i]->enabled = !handler.modules[i]->enabled;
+			if (handler.modules[i]->enabled) {
+				handler.modules[i]->OnEnable();
+				for (auto mod : handler.modules)
+					toggledModule = true;
+			}
+			else {
+				handler.modules[i]->OnDisable();
+				for (auto mod : handler.modules)
+					toggledModule = true;
+			}
+		}
+	}
 	keymap[c] = v;
 }
 
@@ -28,11 +52,21 @@ void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouse
 		if (!ImGui::GetIO().WantCaptureMouse)
 			return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 
-	} else return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
+	}
+	else return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 }
 
 void Init() {
 	if (MH_Initialize() == MH_OK && !initImgui) {
+		handler.InitModules();
+		for (auto mod : handler.modules) {
+			bool addCategory = true;
+			for (auto cat : categories)
+				if (mod->category == cat) addCategory = false;
+			if (addCategory)
+				categories.push_back(mod->category);
+		}
+
 		//Keymap
 		uintptr_t keymapAddr = Utils::findSig("48 83 EC ? 0F B6 C1 4C 8D 05");
 		if (MH_CreateHook((void*)keymapAddr, &keyCallback, reinterpret_cast<LPVOID*>(&_key)) == MH_OK) {
