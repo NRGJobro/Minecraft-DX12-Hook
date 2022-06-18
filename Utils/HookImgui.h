@@ -36,6 +36,7 @@ ID3D12CommandAllocator* allocator = nullptr;
 ID3D12CommandQueue* d3d12CommandQueue = nullptr;
 bool initContext = false;
 
+bool toggle_button = false;
 HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT flags) {
 	auto deviceType = ID3D_Device_Type::INVALID_DEVICE_TYPE;
 	auto window = (HWND)FindWindowA(nullptr, (LPCSTR)"Minecraft");
@@ -296,6 +297,10 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 							ImGui::Spacing();
 							if (ImGui::Button("Test")) {
 							}
+							ImGui::Toggle("Toggle button", &toggle_button);
+							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
+							//ImGui::ButtonScrollable("Button Scrollable that fits in button size", ImVec2(350.f, 0.f));
+							ImGui::ButtonScrollableEx("Button Scrollable (Right-click only!)", ImVec2(100.f, 0.f), ImGuiButtonFlags_MouseButtonRight);
 							ImGui::Spacing();
 						}
 						if (ImGui::CollapsingHeader(("Visuals"))) {

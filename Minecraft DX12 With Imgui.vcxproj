@@ -154,6 +154,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dllmain.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_dx11.h" />
@@ -164,6 +165,9 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\kiero\kiero.h" />
+    <ClInclude Include="Manager\ModuleManager.h" />
+    <ClInclude Include="Modules\Module.h" />
+    <ClInclude Include="Modules\Visual\ClickGui.h" />
     <ClInclude Include="Utils\ClientLogs.h" />
     <ClInclude Include="Utils\HookImgui.h" />
     <ClInclude Include="Utils\Utils.h" />
