@@ -2,9 +2,16 @@
 #define INRANGE(x,a,b)   (x >= a && x <= b)
 #define GET_BYTE( x )    (GET_BITS(x[0]) << 4 | GET_BITS(x[1]))
 #define GET_BITS( x )    (INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
-
+#define FindSignature(x) Utils::findSig(x);
 class Utils {
 public:
+	static auto GetDllHMod(void) -> HMODULE {
+		MEMORY_BASIC_INFORMATION info;
+		size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllHMod, &info, sizeof(info));
+		assert(len == sizeof(info));
+		return len ? (HMODULE)info.AllocationBase : NULL;
+	}
+	
 	static uintptr_t findSig(const char* sig) {
 		const char* pattern = sig;
 		uintptr_t firstMatch = 0;

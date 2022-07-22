@@ -101,5 +101,11 @@
     <ClInclude Include="Modules\Visual\ClickGui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Manager\HooksManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks\Hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
