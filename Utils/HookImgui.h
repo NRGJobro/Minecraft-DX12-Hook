@@ -6,6 +6,14 @@
 #include "Manager/ModuleManager.h"
 ModuleHandler modHandler = ModuleHandler();
 
+//Amimation Stuff
+#include "../include/Animations/snowflake.hpp"
+#include "../include/Animations/fade.hpp"
+
+// Snow Shit
+#define SNOW_LIMIT 300 // max ammount of Snow/Bubbles allowed on screen at once
+std::vector<Snowflake::Snowflake> snow;
+
 auto GetDllMod(void) -> HMODULE {
 	MEMORY_BASIC_INFORMATION info;
 	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllMod, &info, sizeof(info));
@@ -35,8 +43,6 @@ ID3D12GraphicsCommandList* d3d12CommandList = nullptr;
 ID3D12CommandAllocator* allocator = nullptr;
 ID3D12CommandQueue* d3d12CommandQueue = nullptr;
 bool initContext = false;
-
-bool toggle_button = false;
 HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT flags) {
 	auto deviceType = ID3D_Device_Type::INVALID_DEVICE_TYPE;
 	auto window = (HWND)FindWindowA(nullptr, (LPCSTR)"Minecraft");
@@ -53,10 +59,8 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		goto out;
 	};
 	if (deviceType == ID3D_Device_Type::D3D11) {
-		if (!initContext) {
+		if (!initContext)
 			ImGui::CreateContext();
-			initContext = true;
-		};
 		ID3D11DeviceContext* ppContext = nullptr;
 		d3d11Device->GetImmediateContext(&ppContext);
 		ID3D11Texture2D* pBackBuffer;
@@ -64,11 +68,44 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		ID3D11RenderTargetView* mainRenderTargetView;
 		d3d11Device->CreateRenderTargetView(pBackBuffer, NULL, &mainRenderTargetView);
 		pBackBuffer->Release();
+		POINT mouse;
+		RECT rc = { 0 };
+		md::FadeInOut fade;
 		ImGui_ImplWin32_Init(window);
 		ImGui_ImplDX11_Init(d3d11Device, ppContext);
+		if (!initContext) {
+			// fade effect with windows transparency
+			fade.init();
+
+			// Snowflakes
+			Snowflake::CreateSnowFlakes(snow, SNOW_LIMIT, 5.f /*minimum size*/, 25.f /*maximum size*/, 0 /*imgui window x position*/, 0 /*imgui window y position*/, Utils::getScreenResolution().x, Utils::getScreenResolution().y, Snowflake::vec3(0.f, 0.005f) /*gravity*/, IM_COL32(255, 255, 255, 100) /*color*/);
+
+			// Fonts
+			initContext = true;
+		}
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		
+#pragma region SnowFlakes
+		RECT rect;
+		GetWindowRect(window, &rect);
+		ImVec2 size69 = ImVec2(rect.right - rect.left, rect.bottom - rect.top);
+		if (ImGui::doSnow) {
+			ImGui::SetNextWindowPos(ImVec2(size69.x - size69.x, size69.y - size69.y), ImGuiCond_Once);
+			ImGui::SetNextWindowSize(ImVec2(size69.x, size69.y));
+			ImGui::SetNextWindowBgAlpha(0.f);//Set to 0.25 for a nice background
+
+			ImGui::Begin("HELLO!!!", 0, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
+			{
+				GetWindowRect(window, &rc);
+				GetCursorPos(&mouse);
+				// render this before anything else so it is the background
+				Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+			}
+			ImGui::End();
+		}
+#pragma endregion
 
 		for (auto mod : modHandler.modules)
 			if (mod->enabled)
@@ -134,14 +171,40 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 
 					if (ImGui::Begin(("TestGui"), 0, TargetFlags)) {
 						ImGui::SetWindowSize(ImVec2(360.f, 430.f));
+#pragma region FadeAnimations
+						/*md::FadeInOut fade;
+						ImVec2 window_pos = ImGui::GetWindowPos();
+						ImVec2 window_size = ImGui::GetContentRegionMax();  // Other possible use : ImGui::GetContentRegionAvail();
+						ImVec2 mouse_pos = ImVec2(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+						static float opacity = 1.0f;
+						static bool b_inside_window = false;
+						static bool b_child_window_visible = false;
 
-						if (ImGui::CollapsingHeader("Aura")) {
+						if (((mouse_pos.x < window_pos.x) || (mouse_pos.x > (window_pos.x + window_size.x)) ||
+							(mouse_pos.y < window_pos.y) || (mouse_pos.y > (window_pos.y + window_size.y))) &&
+							(b_child_window_visible == false)) {
+							b_inside_window = false;
+						}
+						else
+							b_inside_window = true;
+
+						opacity = fade.fadeInOut(1.f, 1.f, 0.1f, 1.f, b_inside_window);
+
+						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
+						if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+							b_child_window_visible = true; else b_child_window_visible = false;*/
+#pragma endregion
+						if (ImGui::CollapsingHeader("Visuals")) {
 							ImGui::Spacing();
 							if (ImGui::Button("Test")) {
 							}
+							ImGui::Toggle("Toggle Snow", &ImGui::doSnow);
+							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
+							//ImGui::ButtonScrollable("Button Scrollable that fits in button size", ImVec2(350.f, 0.f));
+							ImGui::ButtonScrollableEx("Button Scrollable (Right-click only!)", ImVec2(100.f, 0.f), ImGuiButtonFlags_MouseButtonRight);
 							ImGui::Spacing();
 						}
-						if (ImGui::CollapsingHeader(("Visuals"))) {
+						if (ImGui::CollapsingHeader(("Aura"))) {
 							ImGui::Spacing();
 							if (ImGui::Button("Test")) {
 							}
@@ -213,6 +276,9 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 			rtvHandle.ptr += rtvDescriptorSize;
 			pBackBuffer->Release();
 		};
+		POINT mouse;
+		RECT rc = { 0 };
+		md::FadeInOut fade;
 		if (!initContext) {
 			ImGui_ImplWin32_Init(window);
 			ImGui_ImplDX12_Init(d3d12Device, buffersCounts,
@@ -220,6 +286,13 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 				d3d12DescriptorHeapImGuiRender,
 				d3d12DescriptorHeapImGuiRender->GetCPUDescriptorHandleForHeapStart(),
 				d3d12DescriptorHeapImGuiRender->GetGPUDescriptorHandleForHeapStart());
+
+			// fade effect with windows transparency
+			fade.init();
+
+			// Snowflakes
+			Snowflake::CreateSnowFlakes(snow, SNOW_LIMIT, 5.f /*minimum size*/, 25.f /*maximum size*/, 0 /*imgui window x position*/, 0 /*imgui window y position*/, Utils::getScreenResolution().x, Utils::getScreenResolution().y, Snowflake::vec3(0.f, 0.005f) /*gravity*/, IM_COL32(255, 255, 255, 100) /*color*/);
+
 			initContext = true;
 		};
 		if (d3d12CommandQueue == nullptr)
@@ -227,6 +300,26 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+#pragma region SnowFlakes
+		RECT rect;
+		GetWindowRect(window, &rect);
+		ImVec2 size69 = ImVec2(rect.right - rect.left, rect.bottom - rect.top);
+		if (ImGui::doSnow) {
+			ImGui::SetNextWindowPos(ImVec2(size69.x - size69.x, size69.y - size69.y), ImGuiCond_Once);
+			ImGui::SetNextWindowSize(ImVec2(size69.x, size69.y));
+			ImGui::SetNextWindowBgAlpha(0.f);//Set to 0.25 for a nice background
+
+			ImGui::Begin("HELLO!!!", 0, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
+			{
+				GetWindowRect(window, &rc);
+				GetCursorPos(&mouse);
+				// render this before anything else so it is the background
+				Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+			}
+			ImGui::End();
+		}
+#pragma endregion
 
 		for (auto mod : modHandler.modules)
 			if (mod->enabled)
@@ -292,18 +385,40 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 
 					if (ImGui::Begin(("TestGui"), 0, TargetFlags)) {
 						ImGui::SetWindowSize(ImVec2(360.f, 430.f));
+#pragma region FadeAnimations
+						/*md::FadeInOut fade;
+						ImVec2 window_pos = ImGui::GetWindowPos();
+						ImVec2 window_size = ImGui::GetContentRegionMax();  // Other possible use : ImGui::GetContentRegionAvail();
+						ImVec2 mouse_pos = ImVec2(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+						static float opacity = 1.0f;
+						static bool b_inside_window = false;
+						static bool b_child_window_visible = false;
 
-						if (ImGui::CollapsingHeader("Aura")) {
+						if (((mouse_pos.x < window_pos.x) || (mouse_pos.x > (window_pos.x + window_size.x)) ||
+							(mouse_pos.y < window_pos.y) || (mouse_pos.y > (window_pos.y + window_size.y))) &&
+							(b_child_window_visible == false)) {
+							b_inside_window = false;
+						}
+						else
+							b_inside_window = true;
+
+						opacity = fade.fadeInOut(1.f, 1.f, 0.1f, 1.f, b_inside_window);
+
+						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
+						if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+							b_child_window_visible = true; else b_child_window_visible = false;*/
+#pragma endregion
+						if (ImGui::CollapsingHeader("Visuals")) {
 							ImGui::Spacing();
 							if (ImGui::Button("Test")) {
 							}
-							ImGui::Toggle("Toggle button", &toggle_button);
+							ImGui::Toggle("Toggle Snow", &ImGui::doSnow);
 							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
 							//ImGui::ButtonScrollable("Button Scrollable that fits in button size", ImVec2(350.f, 0.f));
 							ImGui::ButtonScrollableEx("Button Scrollable (Right-click only!)", ImVec2(100.f, 0.f), ImGuiButtonFlags_MouseButtonRight);
 							ImGui::Spacing();
 						}
-						if (ImGui::CollapsingHeader(("Visuals"))) {
+						if (ImGui::CollapsingHeader(("Aura"))) {
 							ImGui::Spacing();
 							if (ImGui::Button("Test")) {
 							}

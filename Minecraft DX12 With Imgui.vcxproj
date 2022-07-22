@@ -140,6 +140,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="include\animations\fade.cpp" />
+    <ClCompile Include="include\animations\snowflake.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
@@ -156,6 +158,8 @@
   <ItemGroup>
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Hooks\Hooks.h" />
+    <ClInclude Include="include\animations\fade.hpp" />
+    <ClInclude Include="include\animations\snowflake.hpp" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_dx11.h" />
@@ -172,6 +176,7 @@
     <ClInclude Include="Modules\Visual\ClickGui.h" />
     <ClInclude Include="Utils\ClientLogs.h" />
     <ClInclude Include="Utils\HookImgui.h" />
+    <ClInclude Include="Utils\Math.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

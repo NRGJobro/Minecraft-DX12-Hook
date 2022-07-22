@@ -1,3 +1,4 @@
+#include "Math.h"
 
 #define INRANGE(x,a,b)   (x >= a && x <= b)
 #define GET_BYTE( x )    (GET_BITS(x[0]) << 4 | GET_BITS(x[1]))
@@ -5,6 +6,12 @@
 #define FindSignature(x) Utils::findSig(x);
 class Utils {
 public:
+	static ImVec2 getScreenResolution() {
+		RECT desktop;
+		const HWND hDesktop = GetDesktopWindow();
+		GetWindowRect(hDesktop, &desktop);
+		return ImVec2(desktop.right, desktop.bottom);
+	}
 	static auto GetDllHMod(void) -> HMODULE {
 		MEMORY_BASIC_INFORMATION info;
 		size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllHMod, &info, sizeof(info));

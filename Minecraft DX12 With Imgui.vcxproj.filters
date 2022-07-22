@@ -45,6 +45,12 @@
     <ClCompile Include="include\kiero\kiero.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="include\animations\snowflake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\animations\fade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -105,6 +111,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hooks\Hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\animations\snowflake.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\animations\fade.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
