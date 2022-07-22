@@ -24,15 +24,3 @@
 #include "Utils/Utils.h"
 #include "Utils/HookImgui.h"
 #include "Utils/ClientLogs.h"
-bool clientAlive = true;
-bool initImgui = true;
-bool renderClickUI = false;
-
-//Keymap and key hook
-std::map<uint64_t, bool> keymap = std::map<uint64_t, bool>();
-typedef void(__thiscall* key)(uint64_t keyId, bool held);
-key _key;
-
-//Mouse hook
-typedef void(__thiscall* Mouse)(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8);
-Mouse _Mouse;

@@ -3,9 +3,22 @@
 #include "../Modules/Module.h"
 #include "../Manager/ModuleManager.h"
 #include "../Manager/HooksManager.h"
+bool clientAlive = true;
+bool initImgui = true;
+bool renderClickUI = false;
+
 ModuleHandler handler = ModuleHandler();
 bool toggledModule = false;
 std::vector<std::string> categories = std::vector<std::string>();
+
+//Keymap and key hook
+std::map<uint64_t, bool> keymap = std::map<uint64_t, bool>();
+typedef void(__thiscall* key)(uint64_t keyId, bool held);
+key _key;
+
+//Mouse hook
+typedef void(__thiscall* Mouse)(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8);
+Mouse _Mouse;
 
 void keyCallback(uint64_t c, bool v) {
 	_key(c, v);
