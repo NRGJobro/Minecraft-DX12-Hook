@@ -8,12 +8,13 @@ ModuleHandler modHandler = ModuleHandler();
 
 //Amimation Stuff
 #include "../include/Animations/snowflake.hpp"
+#include "../include/animations/dotMatrix.h"
 #include "../include/Animations/fade.hpp"
 
 // Snow Shit
 #define SNOW_LIMIT 300 // max ammount of Snow/Bubbles allowed on screen at once
 std::vector<Snowflake::Snowflake> snow;
-
+std::vector<Particle> dots;
 auto GetDllMod(void) -> HMODULE {
 	MEMORY_BASIC_INFORMATION info;
 	size_t len = VirtualQueryEx(GetCurrentProcess(), (void*)GetDllMod, &info, sizeof(info));
@@ -80,6 +81,9 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 			// Snowflakes
 			Snowflake::CreateSnowFlakes(snow, SNOW_LIMIT, 5.f /*minimum size*/, 25.f /*maximum size*/, 0 /*imgui window x position*/, 0 /*imgui window y position*/, Utils::getScreenResolution().x, Utils::getScreenResolution().y, Snowflake::vec3(0.f, 0.005f) /*gravity*/, IM_COL32(255, 255, 255, 100) /*color*/);
 
+			// Dots
+			dots = createDotMatrix({ Utils::getScreenResolution().x,Utils::getScreenResolution().y }, { 40,40 }, Utils::getScreenResolution().x * Utils::getScreenResolution().y / 5);
+
 			// Fonts
 			initContext = true;
 		}
@@ -91,7 +95,7 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		RECT rect;
 		GetWindowRect(window, &rect);
 		ImVec2 size69 = ImVec2(rect.right - rect.left, rect.bottom - rect.top);
-		if (ImGui::doSnow) {
+		if (ImGui::doSnow || ImGui::doDotMatrix) {
 			ImGui::SetNextWindowPos(ImVec2(size69.x - size69.x, size69.y - size69.y), ImGuiCond_Once);
 			ImGui::SetNextWindowSize(ImVec2(size69.x, size69.y));
 			ImGui::SetNextWindowBgAlpha(0.f);//Set to 0.25 for a nice background
@@ -101,7 +105,12 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 				GetWindowRect(window, &rc);
 				GetCursorPos(&mouse);
 				// render this before anything else so it is the background
-				Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+				if (ImGui::doSnow)
+					Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+				if (ImGui::doDotMatrix) {
+					updateDotMatrix({ Utils::getScreenResolution().x,Utils::getScreenResolution().y }, dots);
+					drawDotMatrix(dots, 50, 0.05, false);
+				}
 			}
 			ImGui::End();
 		}
@@ -199,6 +208,7 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 							if (ImGui::Button("Test")) {
 							}
 							ImGui::Toggle("Toggle Snow", &ImGui::doSnow);
+							ImGui::Toggle("Toggle DotMatrix", &ImGui::doDotMatrix);
 							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
 							//ImGui::ButtonScrollable("Button Scrollable that fits in button size", ImVec2(350.f, 0.f));
 							ImGui::ButtonScrollableEx("Button Scrollable (Right-click only!)", ImVec2(100.f, 0.f), ImGuiButtonFlags_MouseButtonRight);
@@ -292,6 +302,9 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 
 			// Snowflakes
 			Snowflake::CreateSnowFlakes(snow, SNOW_LIMIT, 5.f /*minimum size*/, 25.f /*maximum size*/, 0 /*imgui window x position*/, 0 /*imgui window y position*/, Utils::getScreenResolution().x, Utils::getScreenResolution().y, Snowflake::vec3(0.f, 0.005f) /*gravity*/, IM_COL32(255, 255, 255, 100) /*color*/);
+			
+			// Dots
+			dots = createDotMatrix({ Utils::getScreenResolution().x,Utils::getScreenResolution().y }, { 40,40 }, Utils::getScreenResolution().x * Utils::getScreenResolution().y / 9000);
 
 			initContext = true;
 		};
@@ -301,11 +314,11 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-#pragma region SnowFlakes
+#pragma region SnowFlakesAndDotMatrix
 		RECT rect;
 		GetWindowRect(window, &rect);
 		ImVec2 size69 = ImVec2(rect.right - rect.left, rect.bottom - rect.top);
-		if (ImGui::doSnow) {
+		if (ImGui::doSnow || ImGui::doDotMatrix) {
 			ImGui::SetNextWindowPos(ImVec2(size69.x - size69.x, size69.y - size69.y), ImGuiCond_Once);
 			ImGui::SetNextWindowSize(ImVec2(size69.x, size69.y));
 			ImGui::SetNextWindowBgAlpha(0.f);//Set to 0.25 for a nice background
@@ -315,7 +328,13 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 				GetWindowRect(window, &rc);
 				GetCursorPos(&mouse);
 				// render this before anything else so it is the background
-				Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+				if (ImGui::doSnow)
+					Snowflake::Update(snow, Snowflake::vec3(mouse.x, mouse.y), Snowflake::vec3(rc.left, rc.top));  // you can change a few things inside the update function
+
+				if (ImGui::doDotMatrix) {
+					updateDotMatrix({ Utils::getScreenResolution().x,Utils::getScreenResolution().y }, dots);
+					drawDotMatrix(dots, 50, 0.05, false);
+				}
 			}
 			ImGui::End();
 		}
@@ -413,6 +432,7 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 							if (ImGui::Button("Test")) {
 							}
 							ImGui::Toggle("Toggle Snow", &ImGui::doSnow);
+							ImGui::Toggle("Toggle DotMatrix", &ImGui::doDotMatrix);
 							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
 							//ImGui::ButtonScrollable("Button Scrollable that fits in button size", ImVec2(350.f, 0.f));
 							ImGui::ButtonScrollableEx("Button Scrollable (Right-click only!)", ImVec2(100.f, 0.f), ImGuiButtonFlags_MouseButtonRight);

@@ -51,6 +51,9 @@
     <ClCompile Include="include\animations\fade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="include\animations\dotMatrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -120,6 +123,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\animations\dotMatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
