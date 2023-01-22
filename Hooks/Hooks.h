@@ -43,10 +43,10 @@ void keyCallback(uint64_t c, bool v) {
 }
 
 void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8) {
-    ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2(mouseX, mouseY);
-    
 	if (ImGui::GetCurrentContext() != nullptr) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.MousePos = ImVec2(mouseX, mouseY);
+        
 		switch (mouseButton) {
 		case 1:
 			io.MouseDown[0] = isDown;
