@@ -43,25 +43,28 @@ void keyCallback(uint64_t c, bool v) {
 }
 
 void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8) {
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMousePosEvent(mouseX, mouseY);
+    
 	if (ImGui::GetCurrentContext() != nullptr) {
 		switch (mouseButton) {
 		case 1:
-			ImGui::GetIO().MouseDown[0] = isDown;
+			io.MouseDown[0] = isDown;
 			break;
 		case 2:
-			ImGui::GetIO().MouseDown[1] = isDown;
+			io.MouseDown[1] = isDown;
 			break;
 		case 3:
-			ImGui::GetIO().MouseDown[2] = isDown;
+			io.MouseDown[2] = isDown;
 			break;
 		case 4:
-			ImGui::GetIO().MouseWheel = isDown < 0 ? -0.5f : 0.5f; //For scrolling
+			io.MouseWheel = isDown < 0 ? -0.5f : 0.5f; //For scrolling
 			break;
 		default:
 			break;
 		}
 
-		if (!ImGui::GetIO().WantCaptureMouse)
+		if (!io.WantCaptureMouse)
 			return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 
 	}
