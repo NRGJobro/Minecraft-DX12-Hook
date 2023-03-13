@@ -18,6 +18,12 @@ public:
 		assert(len == sizeof(info));
 		return len ? (HMODULE)info.AllocationBase : NULL;
 	}
+
+	template <unsigned int index, typename returnType, typename... args>
+	static inline auto callVirtualTable(void* ptr, args... argList) -> returnType {
+		using function = returnType(__thiscall*)(void*, decltype(argList)...);
+		return (*static_cast<function**>(ptr))[index](ptr, argList...);
+	}
 	
 	static uintptr_t findSig(const char* sig) {
 		const char* pattern = sig;

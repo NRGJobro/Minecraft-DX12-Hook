@@ -3,11 +3,14 @@
 #include "../Modules/Module.h"
 #include "../Manager/ModuleManager.h"
 #include "../Manager/HooksManager.h"
+#include "../Utils/SDK.h"
+
 bool clientAlive = true;
 bool initImgui = true;
 bool renderClickUI = false;
 
 ModuleHandler handler = ModuleHandler();
+mc minecraft = mc();
 bool toggledModule = false;
 std::vector<std::string> categories = std::vector<std::string>();
 
@@ -19,6 +22,10 @@ key _key;
 //Mouse hook
 typedef void(__thiscall* Mouse)(__int64 a1, char mouseButton, char isDown, __int16 mouseX, __int16 mouseY, __int16 relativeMovementX, __int16 relativeMovementY, char a8);
 Mouse _Mouse;
+
+//RenderContext
+typedef void(__fastcall* RenderCtx)(unsigned __int64, class MinecraftUIRenderContext*);
+RenderCtx _RenderCtx;
 
 void keyCallback(uint64_t c, bool v) {
 	_key(c, v);
@@ -71,6 +78,15 @@ void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouse
 	else return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 }
 
+void renderCtxCallback(unsigned __int64 _this, MinecraftUIRenderContext* minecraftUIRenderContext) {
+
+	// Set client instance
+	minecraft.clientInstance = minecraftUIRenderContext->clientInstance;
+	
+	_RenderCtx(_this, minecraftUIRenderContext);
+}
+
+
 void Init() {
 	if (MH_Initialize() == MH_OK && !initImgui) {
 		handler.InitModules();
@@ -89,6 +105,12 @@ void Init() {
 		//MouseClick
 		uintptr_t clickHookAddr = FindSignature("48 8B C4 48 89 58 ? 48 89 68 ? 48 89 70 ? 57 41 54 41 55 41 56 41 57 48 83 EC ? 44 0F B7 BC 24");
 		HookManager::createHook(clickHookAddr, &mouseClickCallback, reinterpret_cast<LPVOID*>(&_Mouse));
+
+		//RenderContext/ClientInstance
+		uintptr_t renderCtxAddr = FindSignature("48 8b c4 48 89 58 ? 55 56 57 41 54 41 55 41 56 41 57 48 8d a8 ? ? ? ? 48 81 ec ? ? ? ? 0f 29 70 ? 0f 29 78 ? 48 8b 05 ? ? ? ? 48 33 c4 48 89 85 ? ? ? ? 4c 8b f2 48 89 54 24 ? 4c 8b e9"); // Ref sig: E8 ? ? ? ? 48 8B 44 24 ? 48 8D 4C 24 ? 48 8B 80
+		HookManager::createHook(renderCtxAddr, &renderCtxCallback, reinterpret_cast<LPVOID*>(&_RenderCtx));
+		
+		while (minecraft.clientInstance == nullptr) {};
 	lab:
 		while (clientAlive) {};
 		Sleep(1);

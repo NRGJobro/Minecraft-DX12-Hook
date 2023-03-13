@@ -4,7 +4,9 @@
 //Module Stuff
 #include "Modules/Module.h"
 #include "Manager/ModuleManager.h"
+#include "SDK.h"
 ModuleHandler modHandler = ModuleHandler();
+mc Minecraft = mc();
 
 //Amimation Stuff
 #include "../include/Animations/snowflake.hpp"
@@ -228,7 +230,9 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 						}
 						if (ImGui::CollapsingHeader(("Exploits"))) {
 							ImGui::Spacing();
-							if (ImGui::Button("Test")) {
+							if (ImGui::Button("Unlock Achevements")) {
+								//if (Minecraft.clientInstance != nullptr && Minecraft.clientInstance->getLocalPlayer() != nullptr)
+									//Minecraft.clientInstance->getLocalPlayer()->unlockAchievments();
 							}
 							ImGui::Spacing();
 						}
@@ -452,7 +456,9 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 						}
 						if (ImGui::CollapsingHeader(("Exploits"))) {
 							ImGui::Spacing();
-							if (ImGui::Button("Test")) {
+							if (ImGui::Button("Unlock Achevements")) {
+								//if (Minecraft.clientInstance != nullptr && Minecraft.clientInstance->getLocalPlayer() != nullptr)
+									//Minecraft.clientInstance->getLocalPlayer()->unlockAchievments();
 							}
 							ImGui::Spacing();
 						}
