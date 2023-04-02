@@ -140,9 +140,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="include\animations\dotMatrix.cpp" />
-    <ClCompile Include="include\animations\fade.cpp" />
-    <ClCompile Include="include\animations\snowflake.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
@@ -159,9 +156,7 @@
   <ItemGroup>
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="Hooks\Hooks.h" />
-    <ClInclude Include="include\animations\dotMatrix.h" />
-    <ClInclude Include="include\animations\fade.hpp" />
-    <ClInclude Include="include\animations\snowflake.hpp" />
+    <ClInclude Include="include\image\stb_image.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_dx11.h" />
