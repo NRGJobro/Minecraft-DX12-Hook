@@ -127,7 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;MINECRAFTDX12WITHIMGUI_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -173,13 +173,9 @@
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\kiero\kiero.h" />
     <ClInclude Include="Manager\HooksManager.h" />
-    <ClInclude Include="Manager\ModuleManager.h" />
-    <ClInclude Include="Modules\Module.h" />
-    <ClInclude Include="Modules\Visual\ClickGui.h" />
     <ClInclude Include="Utils\ClientLogs.h" />
     <ClInclude Include="Utils\HookImgui.h" />
     <ClInclude Include="Utils\Math.h" />
-    <ClInclude Include="Utils\SDK.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

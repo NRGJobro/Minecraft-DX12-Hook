@@ -1,13 +1,6 @@
 //ImGui Shit
 #include "ClientLogs.h"
 
-//Module Stuff
-#include "Modules/Module.h"
-#include "Manager/ModuleManager.h"
-#include "SDK.h"
-ModuleHandler modHandler = ModuleHandler();
-mc Minecraft = mc();
-
 //Amimation Stuff
 #include "../include/Animations/snowflake.hpp"
 #include "../include/animations/dotMatrix.h"
@@ -117,13 +110,6 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 			ImGui::End();
 		}
 #pragma endregion
-
-		for (auto mod : modHandler.modules)
-			if (mod->enabled)
-				mod->OnImGuiRender();
-
-		//for (auto mod : modHandler.modules)
-			//if (mod->enabled && mod->name == "ClickGui") {
 				{
 					ImGuiStyle* style = &ImGui::GetStyle();
 
@@ -230,10 +216,7 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 						}
 						if (ImGui::CollapsingHeader(("Exploits"))) {
 							ImGui::Spacing();
-							if (ImGui::Button("Unlock Achevements")) {
-								//if (Minecraft.clientInstance != nullptr && Minecraft.clientInstance->getLocalPlayer() != nullptr)
-									//Minecraft.clientInstance->getLocalPlayer()->unlockAchievments();
-							}
+							if (ImGui::Button("Unlock Achevements")) {}
 							ImGui::Spacing();
 						}
 					}
@@ -343,13 +326,6 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 			ImGui::End();
 		}
 #pragma endregion
-
-		for (auto mod : modHandler.modules)
-			if (mod->enabled)
-				mod->OnImGuiRender();
-
-		//for (auto mod : modHandler.modules) {
-			//if (mod->name == "ClickGui" && mod->enabled) {
 				{
 					ImGuiStyle* style = &ImGui::GetStyle();
 
@@ -456,17 +432,12 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 						}
 						if (ImGui::CollapsingHeader(("Exploits"))) {
 							ImGui::Spacing();
-							if (ImGui::Button("Unlock Achevements")) {
-								//if (Minecraft.clientInstance != nullptr && Minecraft.clientInstance->getLocalPlayer() != nullptr)
-									//Minecraft.clientInstance->getLocalPlayer()->unlockAchievments();
-							}
+							if (ImGui::Button("Unlock Achevements")) {}
 							ImGui::Spacing();
 						}
 					}
 					ImGui::End();
 				}
-			//}
-		//}
 
 		FrameContext& currentFrameContext = frameContext[ppSwapChain->GetCurrentBackBufferIndex()];
 		currentFrameContext.commandAllocator->Reset();
