@@ -49,10 +49,9 @@ void mouseClickCallback(__int64 a1, char mouseButton, char isDown, __int16 mouse
 	else return _Mouse(a1, mouseButton, isDown, mouseX, mouseY, relativeMovementX, relativeMovementY, a8);
 }
 
-
 void Init() {
 	if (MH_Initialize() == MH_OK && !initImgui) {
-
+		
 		//Keymap
 		uintptr_t keymapAddr = FindSignature("48 83 EC ? 0F B6 C1 4C 8D 05");
 		HookManager::createHook(keymapAddr, &keyCallback, reinterpret_cast<LPVOID*>(&_key));
