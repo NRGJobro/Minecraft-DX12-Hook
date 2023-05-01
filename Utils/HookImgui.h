@@ -24,6 +24,9 @@ auto GetDllMod(void) -> HMODULE {
 	return len ? (HMODULE)info.AllocationBase : NULL;
 }
 
+//Index shit
+int countnum = -1;
+
 typedef HRESULT(__thiscall* PresentD3D12)(IDXGISwapChain3*, UINT, UINT);
 PresentD3D12 oPresentD3D12;
 ID3D11Device* d3d11Device = nullptr;
@@ -433,8 +436,20 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 #pragma endregion
 						if (ImGui::CollapsingHeader("Visuals")) {
 							ImGui::Spacing();
-							if (ImGui::Button("Test")) {
+							ImGui::SliderInt("Index", &countnum, -1, 1000);
+							ImGui::Spacing();
+							if (ImGui::Button("Increase")) {
+								countnum++;
 							}
+							ImGui::Spacing();
+							if (ImGui::Button("Decrease")) {
+								countnum--;
+							}
+							ImGui::Spacing();
+							if (ImGui::Button("Reset")) {
+								countnum = -1;
+							}
+							ImGui::Spacing();
 							ImGui::Toggle("Toggle Snow", &ImGui::doSnow);
 							ImGui::Toggle("Toggle DotMatrix", &ImGui::doDotMatrix);
 							ImGui::ButtonScrollable("Button Scrollable", ImVec2(100.f, 0.f));
@@ -502,15 +517,35 @@ out:
 	return oPresentD3D12(ppSwapChain, syncInterval, flags);
 };
 
+//CommandList
 typedef void(__thiscall* ExecuteCommandListsD3D12)(ID3D12CommandQueue*, UINT, ID3D12CommandList*);
 ExecuteCommandListsD3D12 oExecuteCommandListsD3D12;
-
 void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandLists, ID3D12CommandList* ppCommandLists) {
 	if (!d3d12CommandQueue)
 		d3d12CommandQueue = queue;
 
 	oExecuteCommandListsD3D12(queue, NumCommandLists, ppCommandLists);
 };
+
+//Instanced
+typedef void(__stdcall* D3D12DrawInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
+D3D12DrawInstanced o_D12DrawInstanced = NULL;
+void __stdcall hkDrawInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) {
+	return o_D12DrawInstanced(dCommandList, VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+}
+
+//Indexed
+typedef void(__stdcall* D3D12DrawIndexedInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex);
+D3D12DrawIndexedInstanced o_D12DrawIndexedInstanced = NULL;
+void __stdcall hkDrawIndexedInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex) {
+
+	if (countnum == IndexCount / 100)
+		return;
+
+	return o_D12DrawIndexedInstanced(dCommandList, IndexCount, InstanceCount, StartIndex, BaseVertex);
+}
+
+//Hooks
 class ImguiHooks {
 public:
 	static void InitImgui() {
@@ -522,5 +557,7 @@ public:
 
 		kiero::bind(54, (void**)&oExecuteCommandListsD3D12, hookExecuteCommandListsD3D12);
 		kiero::bind(140, (void**)&oPresentD3D12, hookPresentD3D12);
+		kiero::bind(84, (void**)&o_D12DrawInstanced, hkDrawInstancedD12);
+		kiero::bind(85, (void**)&o_D12DrawIndexedInstanced, hkDrawIndexedInstancedD12);
 	}
 };
