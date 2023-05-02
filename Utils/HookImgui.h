@@ -47,6 +47,7 @@ ID3D12DescriptorHeap* d3d12DescriptorHeapImGuiRender = nullptr;
 ID3D12DescriptorHeap* d3d12DescriptorHeapBackBuffers = nullptr;
 ID3D12GraphicsCommandList* d3d12CommandList = nullptr;
 ID3D12CommandAllocator* allocator = nullptr;
+D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
 ID3D12CommandQueue* d3d12CommandQueue = nullptr;
 bool initContext = false;
 HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT flags) {
@@ -283,7 +284,7 @@ HRESULT hookPresentD3D12(IDXGISwapChain3* ppSwapChain, UINT syncInterval, UINT f
 		if (d3d12Device->CreateDescriptorHeap(&descriptorBackBuffers, IID_PPV_ARGS(&d3d12DescriptorHeapBackBuffers)) != S_OK)
 			return false;
 		const auto rtvDescriptorSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = d3d12DescriptorHeapBackBuffers->GetCPUDescriptorHandleForHeapStart();
+		rtvHandle = d3d12DescriptorHeapBackBuffers->GetCPUDescriptorHandleForHeapStart();
 		for (size_t i = 0; i < buffersCounts; i++) {
 			ID3D12Resource* pBackBuffer = nullptr;
 			frameContext[i].main_render_target_descriptor = rtvHandle;
@@ -517,35 +518,12 @@ out:
 	return oPresentD3D12(ppSwapChain, syncInterval, flags);
 };
 
-void SetWireframeMode(ID3D12GraphicsCommandList* dCommandList, bool enable) {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	//dCommandList->GetPipelineState(&psoDesc); // cant fix :cry:
-
-	if (psoDesc.RasterizerState.FillMode == (enable ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID)) {
-		return;
-	}
-
-	psoDesc.RasterizerState.FillMode = enable ? D3D12_FILL_MODE_WIREFRAME
-		: D3D12_FILL_MODE_SOLID;
-
-	ID3D12PipelineState* pso = nullptr;
-	ID3D12Device* device = nullptr;
-	dCommandList->GetDevice(IID_PPV_ARGS(&device));
-	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso));
-
-	dCommandList->SetPipelineState(pso);
-
-	pso->Release();
-	device->Release();
-}
-
 //CommandList
 typedef void(__thiscall* ExecuteCommandListsD3D12)(ID3D12CommandQueue*, UINT, ID3D12CommandList*);
 ExecuteCommandListsD3D12 oExecuteCommandListsD3D12;
 void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandLists, ID3D12CommandList* ppCommandLists) {
 	if (!d3d12CommandQueue)
 		d3d12CommandQueue = queue;
-	//SetWireframeMode(reinterpret_cast<ID3D12GraphicsCommandList*>(ppCommandLists), true);
 	oExecuteCommandListsD3D12(queue, NumCommandLists, ppCommandLists);
 };
 
@@ -553,7 +531,6 @@ void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandList
 typedef void(__stdcall* D3D12DrawInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
 D3D12DrawInstanced o_D12DrawInstanced = NULL;
 void __stdcall hkDrawInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) {
-	//SetWireframeMode(dCommandList, true);
 	return o_D12DrawInstanced(dCommandList, VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 }
 
@@ -561,7 +538,38 @@ void __stdcall hkDrawInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT 
 typedef void(__stdcall* D3D12DrawIndexedInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex);
 D3D12DrawIndexedInstanced o_D12DrawIndexedInstanced = NULL;
 void __stdcall hkDrawIndexedInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex) {
-	//SetWireframeMode(dCommandList, true);
+	//Tests
+	 
+	//for (int i = -3; i <= 3; i++) {
+	//	INT offset = BaseVertex + i * 10;
+	//	o_D12DrawIndexedInstanced(dCommandList, IndexCount, InstanceCount, StartIndex, offset); /multiply rendering
+	//}
+
+	//IndexCount = 3; // Only draw the first three triangles of the mesh
+
+	//static float time = 0.0f;
+	//BaseVertex += static_cast<int>(sin(time) * 10.0f); // Offset the vertices based on a sine wave
+	//time += 0.01f;
+
+	//IndexCount += rand() % 10; // Add a random offset to IndexCount
+	//StartIndex += rand() % 10; // Add a random offset to StartIndex
+	//BaseVertex += rand() % 10; // Add a random offset to BaseVertex
+
+	//static float time = 0.0f;
+	//time += 0.1f; // Increase time to make the wave move faster
+	//float wave = sin(time) * 10.0f; // Calculate the wave value based on the current time
+	//BaseVertex += (INT)wave; // Add the wave value to the BaseVertex parameter
+
+	//Wireframe
+	//dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
+
+	//static float time = 0.0f;
+	//time += 0.001f; // Increase time to make the wave move faster
+	//float wave = sin(time) * 10.0f; // Calculate the wave value based on the current time
+	//if (IndexCount == 72 || IndexCount == 180) {
+	//	BaseVertex += static_cast<int>(wave); // Add the wave value to the BaseVertex parameter
+	//}
+
 	return o_D12DrawIndexedInstanced(dCommandList, IndexCount, InstanceCount, StartIndex, BaseVertex);
 }
 
