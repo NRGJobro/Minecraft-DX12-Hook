@@ -517,13 +517,35 @@ out:
 	return oPresentD3D12(ppSwapChain, syncInterval, flags);
 };
 
+void SetWireframeMode(ID3D12GraphicsCommandList* dCommandList, bool enable) {
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	//dCommandList->GetPipelineState(&psoDesc); // cant fix :cry:
+
+	if (psoDesc.RasterizerState.FillMode == (enable ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID)) {
+		return;
+	}
+
+	psoDesc.RasterizerState.FillMode = enable ? D3D12_FILL_MODE_WIREFRAME
+		: D3D12_FILL_MODE_SOLID;
+
+	ID3D12PipelineState* pso = nullptr;
+	ID3D12Device* device = nullptr;
+	dCommandList->GetDevice(IID_PPV_ARGS(&device));
+	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso));
+
+	dCommandList->SetPipelineState(pso);
+
+	pso->Release();
+	device->Release();
+}
+
 //CommandList
 typedef void(__thiscall* ExecuteCommandListsD3D12)(ID3D12CommandQueue*, UINT, ID3D12CommandList*);
 ExecuteCommandListsD3D12 oExecuteCommandListsD3D12;
 void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandLists, ID3D12CommandList* ppCommandLists) {
 	if (!d3d12CommandQueue)
 		d3d12CommandQueue = queue;
-
+	//SetWireframeMode(reinterpret_cast<ID3D12GraphicsCommandList*>(ppCommandLists), true);
 	oExecuteCommandListsD3D12(queue, NumCommandLists, ppCommandLists);
 };
 
@@ -531,6 +553,7 @@ void hookExecuteCommandListsD3D12(ID3D12CommandQueue* queue, UINT NumCommandList
 typedef void(__stdcall* D3D12DrawInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation);
 D3D12DrawInstanced o_D12DrawInstanced = NULL;
 void __stdcall hkDrawInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation) {
+	//SetWireframeMode(dCommandList, true);
 	return o_D12DrawInstanced(dCommandList, VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 }
 
@@ -538,10 +561,7 @@ void __stdcall hkDrawInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT 
 typedef void(__stdcall* D3D12DrawIndexedInstanced)(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex);
 D3D12DrawIndexedInstanced o_D12DrawIndexedInstanced = NULL;
 void __stdcall hkDrawIndexedInstancedD12(ID3D12GraphicsCommandList* dCommandList, UINT IndexCount, UINT InstanceCount, UINT StartIndex, INT BaseVertex) {
-
-	if (countnum == IndexCount / 100)
-		return;
-
+	//SetWireframeMode(dCommandList, true);
 	return o_D12DrawIndexedInstanced(dCommandList, IndexCount, InstanceCount, StartIndex, BaseVertex);
 }
 
