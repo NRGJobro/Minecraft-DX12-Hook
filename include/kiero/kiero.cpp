@@ -380,7 +380,7 @@ kiero::Status::Enum kiero::init(RenderType::Enum _renderType) {
 					return Status::UnknownError;
 				}
 
-				D3D12_COMMAND_QUEUE_DESC queueDesc;
+				D3D12_COMMAND_QUEUE_DESC queueDesc{};
 				queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 				queueDesc.Priority = 0;
 				queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -419,7 +419,7 @@ kiero::Status::Enum kiero::init(RenderType::Enum _renderType) {
 				bufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 				bufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-				DXGI_SAMPLE_DESC sampleDesc;
+				DXGI_SAMPLE_DESC sampleDesc{};
 				sampleDesc.Count = 1;
 				sampleDesc.Quality = 0;
 
@@ -441,6 +441,8 @@ kiero::Status::Enum kiero::init(RenderType::Enum _renderType) {
 				}
 
 				g_methodsTable = (uint150_t*)::calloc(150, sizeof(uint150_t));
+				if(g_methodsTable == nullptr)
+					return Status::UnknownError;
 				::memcpy(g_methodsTable, *(uint150_t**)device, 44 * sizeof(uint150_t));
 				::memcpy(g_methodsTable + 44, *(uint150_t**)commandQueue, 19 * sizeof(uint150_t));
 				::memcpy(g_methodsTable + 44 + 19, *(uint150_t**)commandAllocator, 9 * sizeof(uint150_t));
